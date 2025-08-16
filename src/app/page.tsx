@@ -1,102 +1,97 @@
-import Image from "next/image";
+"use client";
+
+import AddPersonForm from "@/components/AddPersonForm";
+import DescendantTree from "@/components/DescendantTree";
+import SearchBar from "@/components/SearchBar";
+import { useState } from "react";
+
+interface Person {
+  id: string;
+  name: string;
+  [key: string]: any;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handlePersonAdded = () => {
+    setSelectedPerson(null); // Clear selection after adding a person
+  };
+
+  return (
+        <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 via-white to-blue-50">
+      {/* Navbar */}
+      <nav className="w-full bg-white shadow-md py-4 px-8 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-blue-700">
+          👨‍👩‍👧 Dompim Asamankama Geneology
+        </h1>
+        <div className="space-x-6 text-gray-600 font-medium">
+          <button className="hover:text-blue-700">Home</button>
+          <button className="hover:text-blue-700">Family Tree</button>
+          <button className="hover:text-blue-700">Gallery</button>
+          <button className="hover:text-blue-700">Events</button>
+          <button className="hover:text-blue-700">About</button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </nav>
+
+      {/* Hero Section */}
+      <header className="flex flex-col items-center text-center py-20 px-6">
+        <h2 className="text-5xl font-extrabold text-gray-800 drop-shadow-sm">
+          Welcome to Our Family Website
+        </h2>
+        <p className="mt-4 text-lg text-gray-600 max-w-2xl">
+          Explore our family history, search for relatives, and keep track of our
+          legacy together. This is our story — preserved for future generations.
+        </p>
+      </header>
+
+      {/* Search Section */}
+      <section className="w-full max-w-2xl mx-auto px-6 -mt-10">
+        <div className="bg-white shadow-lg rounded-2xl p-8 border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-gray-700">
+            🔍 Find Family Members
+          </h3>
+          <SearchBar onSelect={setSelectedPerson} />
+        </div>
+      </section>
+
+      {/* Descendant Tree */}
+      {selectedPerson && (
+        <section className="w-full max-w-5xl mx-auto px-6 mt-16">
+          <div className="bg-white shadow-xl rounded-2xl p-10 border border-gray-200">
+            <h3 className="text-2xl font-bold text-blue-700 mb-6">
+              🌳 Descendants of {selectedPerson.name}
+            </h3>
+            <DescendantTree person={selectedPerson} />
+          </div>
+        </section>
+      )}
+
+      {/* Extra Features Section */}
+      <section className="w-full max-w-6xl mx-auto px-6 mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="bg-white shadow-md rounded-2xl p-6 text-center hover:shadow-xl transition">
+          <h4 className="text-xl font-semibold text-green-700 mb-3">📸 Gallery</h4>
+          <p className="text-gray-600">
+            Browse cherished family memories in pictures & videos.
+          </p>
+        </div>
+        <div className="bg-white shadow-md rounded-2xl p-6 text-center hover:shadow-xl transition">
+          <h4 className="text-xl font-semibold text-blue-700 mb-3">🎉 Events</h4>
+          <p className="text-gray-600">
+            Keep track of birthdays, weddings, and reunions.
+          </p>
+        </div>
+        <div className="bg-white shadow-md rounded-2xl p-6 text-center hover:shadow-xl transition">
+          <h4 className="text-xl font-semibold text-purple-700 mb-3">📖 About</h4>
+          <p className="text-gray-600">
+            Read about our family’s history and origins.
+          </p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="mt-20 bg-white py-6 text-center border-t border-gray-200 text-gray-600">
+        © {new Date().getFullYear()} Dompim Asamankama Geneology. All rights reserved.
       </footer>
     </div>
   );
