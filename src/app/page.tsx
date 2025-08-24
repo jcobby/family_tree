@@ -20,25 +20,7 @@ export default function Home() {
 
   return (
    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 via-white to-blue-50">
-  {/* Navbar */}
-  <nav className="w-full bg-white shadow-md py-4 px-6 md:px-12 flex justify-between items-center">
-    <h1 className="text-xl md:text-2xl font-bold text-blue-700">
-      👨‍👩‍👧 Dompim Asamankama Geneology
-    </h1>
-    <div className="hidden md:flex space-x-6 text-gray-600 font-medium">
-      <button className="hover:text-blue-700">Home</button>
-      <button className="hover:text-blue-700">Family Tree</button>
-      <button className="hover:text-blue-700">Gallery</button>
-      <button className="hover:text-blue-700">Events</button>
-      <button className="hover:text-blue-700">About</button>
-    </div>
-    {/* Mobile menu button (hamburger) */}
-    <div className="md:hidden">
-      <button className="text-gray-600 hover:text-blue-700">
-        ☰
-      </button>
-    </div>
-  </nav>
+ 
 
   {/* Hero Section */}
   <header className="flex flex-col items-center text-center py-16 md:py-20 px-4">
@@ -97,7 +79,7 @@ export default function Home() {
 
   {/* Footer */}
   <footer className="mt-16 md:mt-20 bg-white py-6 text-center border-t border-gray-200 text-gray-600 text-sm md:text-base">
-    © {new Date().getFullYear()} Dompim Asamankama Geneology. All rights reserved.
+    © {new Date().getFullYear()} Adjua Asamankama Ebusua at Dompim Pepesa. All rights reserved.
   </footer>
 </div>
 
