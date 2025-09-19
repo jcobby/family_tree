@@ -10,12 +10,16 @@ export default function DeleteGeneration() {
   const [message, setMessage] = useState("");
 
   const handleDelete = async () => {
-    if (!generation) {
-      setMessage("⚠️ Please enter a generation number.");
+    if (!generation.trim()) {
+      setMessage("⚠️ Please enter a generation.");
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete generation ${generation}? This cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete generation "${generation}"? This cannot be undone.`
+      )
+    ) {
       return;
     }
 
@@ -23,12 +27,12 @@ export default function DeleteGeneration() {
       setLoading(true);
       setMessage("");
 
-      // Query all people in that generation
-      const q = query(collection(db, "people"), where("generation", "==", Number(generation)));
+      // Query all people in that generation (string match)
+      const q = query(collection(db, "people"), where("generation", "==", generation));
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        setMessage(`No people found in generation ${generation}.`);
+        setMessage(`No people found in generation "${generation}".`);
         setLoading(false);
         return;
       }
@@ -41,7 +45,7 @@ export default function DeleteGeneration() {
 
       await batch.commit();
 
-      setMessage(`✅ Successfully deleted generation ${generation} and all its people.`);
+      setMessage(`✅ Successfully deleted generation "${generation}" and all its people.`);
     } catch (err) {
       console.error("Error deleting generation:", err);
       setMessage("❌ Failed to delete generation. Try again.");
@@ -55,8 +59,8 @@ export default function DeleteGeneration() {
       <h2 className="text-lg font-bold mb-3">🗑️ Delete Generation</h2>
 
       <input
-        type="number"
-        placeholder="Enter generation number"
+        type="text"
+        placeholder="Enter generation (e.g. One, Two, Five)"
         value={generation}
         onChange={(e) => setGeneration(e.target.value)}
         className="border rounded px-3 py-2 w-full mb-3"

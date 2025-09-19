@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { db } from "../lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 interface Person {
   id: string;
   name: string;
   parentId?: string | null;
   generation?: number;
+  gender?: "male" | "female";
+  parentName?: string; // for display
 }
 
 export default function SearchBar({ onSelect }: { onSelect: (person: Person) => void }) {
@@ -24,7 +26,7 @@ export default function SearchBar({ onSelect }: { onSelect: (person: Person) => 
       } else {
         setResults([]);
       }
-    }, 300); // waits 300ms after typing stops
+    }, 300);
 
     return () => clearTimeout(delayDebounce);
   }, [search]);
@@ -39,12 +41,40 @@ export default function SearchBar({ onSelect }: { onSelect: (person: Person) => 
       );
 
       const snapshot = await getDocs(q);
-      setResults(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<Person, "id">) })));
+
+      const people: Person[] = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
+          const person = { id: docSnap.id, ...(docSnap.data() as Omit<Person, "id">) };
+
+          // 🔹 If person has a parentId, fetch parent name
+          if (person.parentId) {
+            try {
+              const parentDoc = await getDoc(doc(db, "people", person.parentId));
+              if (parentDoc.exists()) {
+                person.parentName = parentDoc.data().name;
+              }
+            } catch (e) {
+              console.error("Error fetching parent:", e);
+            }
+          }
+
+          return person;
+        })
+      );
+
+      setResults(people);
     } catch (error) {
       console.error("Error searching people:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatRelation = (person: Person) => {
+    if (!person.parentName) return ""; // no parent found
+    if (person.gender === "male") return `Son of ${person.parentName}`;
+    if (person.gender === "female") return `Daughter of ${person.parentName}`;
+    return `Child of ${person.parentName}`; // fallback if gender missing
   };
 
   return (
@@ -62,17 +92,18 @@ export default function SearchBar({ onSelect }: { onSelect: (person: Person) => 
           {results.map((person) => (
             <li key={person.id} className="px-3 py-2 hover:bg-gray-100 cursor-pointer">
               <button
-  onClick={() => {
-    onSelect(person);
-    setSearch("");       // clear input
-    setResults([]);      // clear dropdown
-  }}
-  className="w-full text-left"
->
-  {person.name}{" "}
-  <span className="text-gray-500 text-sm">(Gen {person.generation})</span>
-</button>
-
+                onClick={() => {
+                  onSelect(person);
+                  setSearch("");   // clear input
+                  setResults([]);  // clear dropdown
+                }}
+                className="w-full text-left"
+              >
+                {person.name}{" "}
+                <span className="text-gray-500 text-sm">
+                  {formatRelation(person)}
+                </span>
+              </button>
             </li>
           ))}
         </ul>

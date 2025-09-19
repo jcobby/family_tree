@@ -6,18 +6,20 @@ interface Person {
   id: string;
   name: string;
   parentId?: string | null;
-  generation?: number;
+  generation?: string | null;
 }
 
 export default function AddPersonForm({ onPersonAdded }: { onPersonAdded?: () => void }) {
   const [name, setName] = useState("");
   const [parentId, setParentId] = useState("");
-  const [generation, setGeneration] = useState<number | "">("");
+  const [generation, setGeneration] = useState<string>(""); 
+  const [customGeneration, setCustomGeneration] = useState<string>(""); 
   const [people, setPeople] = useState<Person[]>([]);
+  const [generations, setGenerations] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(""); // ✅ success state
+  const [successMessage, setSuccessMessage] = useState("");
 
-  // Fetch people
+  // Fetch people & generations
   const fetchPeople = async () => {
     try {
       const snapshot = await getDocs(collection(db, "people"));
@@ -30,7 +32,14 @@ export default function AddPersonForm({ onPersonAdded }: { onPersonAdded?: () =>
           generation: data.generation ?? null,
         };
       });
+
       setPeople(peopleList);
+
+      // ✅ Extract unique generations
+      const gens = Array.from(
+        new Set(peopleList.map((p) => p.generation).filter(Boolean))
+      ) as string[];
+      setGenerations(gens);
     } catch (error) {
       console.error("Failed to fetch people:", error);
     }
@@ -44,26 +53,34 @@ export default function AddPersonForm({ onPersonAdded }: { onPersonAdded?: () =>
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const finalGeneration = generation === "other" ? customGeneration : generation;
+
+    if (!finalGeneration) {
+      alert("⚠️ Please select or enter a generation.");
+      return;
+    }
+
     setLoading(true);
-    setSuccessMessage(""); // clear old message
+    setSuccessMessage("");
     try {
       await addDoc(collection(db, "people"), {
         name,
         parentId: parentId || null,
-        generation: generation || null,
+        generation: finalGeneration,
         searchName: name.toLowerCase(),
       });
 
-      setName("");
-      setParentId("");
-      setGeneration("");
+      // setName("");
+      // setParentId("");
+      // setGeneration("");
+      // setCustomGeneration("");
 
       await fetchPeople();
 
       if (onPersonAdded) onPersonAdded();
 
-      setSuccessMessage("✅ Person added successfully!"); // ✅ show success
-      setTimeout(() => setSuccessMessage(""), 3000); // auto-hide after 3s
+      setSuccessMessage("✅ Person added successfully!");
+      setTimeout(() => setSuccessMessage(""), 1000);
     } catch (error) {
       console.error("Error adding person:", error);
     } finally {
@@ -93,27 +110,43 @@ export default function AddPersonForm({ onPersonAdded }: { onPersonAdded?: () =>
       />
 
       <select
-  className="border px-2 py-1 rounded w-full mb-2"
-  value={parentId}
-  onChange={(e) => setParentId(e.target.value)}
->
-  <option value="">No parent (top ancestor)</option>
-  {people.map((p) => (
-    <option key={p.id} value={p.id}>
-      {p.name} {p.generation ? `(Gen ${p.generation})` : ""}
-    </option>
-  ))}
-</select>
+        className="border px-2 py-1 rounded w-full mb-2"
+        value={parentId}
+        onChange={(e) => setParentId(e.target.value)}
+      >
+        <option value="">No parent (top ancestor)</option>
+        {people.map((p) => (
+          <option key={p.id} value={p.id}>
+            <p className="text-green-400">{p.name}</p> {p.generation ? `(${p.generation})` : ""}
+          </option>
+        ))}
+      </select>
 
-
-      <input
-        type="number"
+      {/* ✅ Generation Dropdown */}
+      <select
         className="border px-2 py-1 rounded w-full mb-2"
         value={generation}
-        onChange={(e) => setGeneration(Number(e.target.value))}
-        placeholder="Generation (e.g., 1, 2, 3)"
-        min={1}
-      />
+        onChange={(e) => setGeneration(e.target.value)}
+      >
+        <option value="">-- Select Generation --</option>
+        {generations.map((gen, idx) => (
+          <option key={idx} value={gen}>
+            {gen}
+          </option>
+        ))}
+        <option value="other">➕ Other (type new)</option>
+      </select>
+
+      {/* ✅ Show input if "Other" is selected */}
+      {generation === "other" && (
+        <input
+          type="text"
+          className="border px-2 py-1 rounded w-full mb-2"
+          value={customGeneration}
+          onChange={(e) => setCustomGeneration(e.target.value)}
+          placeholder="Enter new generation"
+        />
+      )}
 
       <button
         type="submit"
