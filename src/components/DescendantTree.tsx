@@ -7,8 +7,10 @@ interface Person {
   name: string;
   parentId?: string | null;
   generation?: number;
+  born?: number;   // ✅ add this
   children?: Person[];
 }
+
 
 async function fetchDescendants(personId: string, generation = 1): Promise<Person[]> {
   try {
@@ -20,6 +22,7 @@ async function fetchDescendants(personId: string, generation = 1): Promise<Perso
       ...(doc.data() as Omit<Person, "id">),
       generation, // assign generation level
     }));
+    console.log(`Fetched ${children.length} children for personId ${personId} at generation ${generation}`);
 
     return await Promise.all(
       children.map(async (child) => ({
@@ -53,14 +56,27 @@ export default function DescendantTree({ person }: { person: Person }) {
   );
 
 
-  const groupByGeneration = (nodes: Person[], grouped: Record<number, Person[]> = {}) => {
+const groupByGeneration = (
+  nodes: Person[],
+  grouped: Record<number, Person[]> = {}
+) => {
   nodes.forEach((node) => {
     if (!grouped[node.generation!]) grouped[node.generation!] = [];
     grouped[node.generation!].push(node);
     if (node.children) groupByGeneration(node.children, grouped);
   });
+
+  // 🔹 Sort each generation by born number
+  Object.keys(grouped).forEach((gen) => {
+    grouped[Number(gen)].sort((a, b) => {
+      if (a.born != null && b.born != null) return a.born - b.born;
+      return (a.born ?? 9999) - (b.born ?? 9999); // put missing at end
+    });
+  });
+
   return grouped;
 };
+
 
 
   return (
@@ -68,17 +84,18 @@ export default function DescendantTree({ person }: { person: Person }) {
     <h2 className="text-xl font-bold mb-2">Descendants of {person.name}</h2>
     {descendants.length > 0 ? (
       Object.entries(groupByGeneration(descendants))
-        .sort(([a], [b]) => Number(a) - Number(b))
-        .map(([gen, people]) => (
-          <div key={gen} className="mb-4">
-            <h3 className="font-semibold text-blue-700">Generation {gen}</h3>
-            <ul className="ml-6 list-disc">
-              {people.map((p) => (
-                <li key={p.id}>{p.name}</li>
-              ))}
-            </ul>
-          </div>
-        ))
+  .sort(([a], [b]) => Number(a) - Number(b))
+  .map(([gen, people]) => (
+    <div key={gen} className="mb-4">
+      <h3 className="font-semibold text-blue-700">Generation {gen}</h3>
+      <ul className="ml-6 list-disc">
+        {people.map((p) => (
+          <li key={p.id}>{p.name}</li>
+        ))}
+      </ul>
+    </div>
+  ))
+
     ) : (
       <div className="text-gray-500">No descendants found.</div>
     )}

@@ -26,7 +26,7 @@ function TreeNode({ person }: { person: Person }) {
         <div className="flex flex-col items-center mt-2">
           {/* vertical line */}
           <div className="w-0.5 h-4 bg-gray-400"></div>
-          <div className="flex flex-wrap justify-center items-start relative">
+<div className="flex justify-center items-start relative">
             {/* horizontal line connecting siblings */}
             <div className="absolute top-2 left-0 right-0 h-0.5 bg-gray-400 hidden sm:block"></div>
             {person.children.map((child) => (
@@ -45,30 +45,7 @@ function TreeNode({ person }: { person: Person }) {
   );
 }
 
-// 🔹 Extract number from generation string (e.g. "Fifth Generation" → 5)
-function extractGenNumber(gen: string): number | null {
-  const match = gen.match(/\d+/); // handles "5th", "Fifth", "4"
-  if (match) return parseInt(match[0], 10);
 
-  // fallback: detect words
-  const words: Record<string, number> = {
-    first: 1,
-    second: 2,
-    third: 3,
-    fourth: 4,
-    fifth: 5,
-    sixth: 6,
-    seventh: 7,
-    eighth: 8,
-    ninth: 9,
-    tenth: 10,
-  };
-  const lower = gen.toLowerCase();
-  for (const word in words) {
-    if (lower.includes(word)) return words[word];
-  }
-  return null;
-}
 
 export default function FamilyTreePage() {
   const [familyTrees, setFamilyTrees] = useState<Record<string, Person[]>>({});
@@ -142,32 +119,65 @@ Object.keys(grouped).forEach((gen) => {
 
   console.log('familyTrees',familyTrees);
 
+
+  // 🔹 Define custom generation order
+// 🔹 Your custom order but shorter keywords
+const generationOrder = [
+  "NANA ABREMA TO FOURTH",
+  "AYISAA TO FIFTH",
+  "EKOBA SENSEN TO FIFTH",
+  "NKRUMAH TO FIFTH",
+  "MANU TO SIXTH",
+  "EFAH TO SIXTH",
+  "AYA TO SIXTH",
+  "ABA TO SEVENTH",
+  "BAYO TO SEVENTH",
+  "NYAWEBA TO SEVENTH",
+  "MANZA ADOW TO  SEVENTH",
+  "ATTA TO SEVENTH",
+]; 
+
+function normalizeGen(gen: string): string {
+  return gen.toUpperCase();
+}
+
+function findGenIndex(gen: string): number {
+  const upper = normalizeGen(gen);
+  console.log('upper',upper);
+  for (let i = 0; i < generationOrder.length; i++) {
+    if (upper.includes(generationOrder[i])) return i;
+  }
+  return -1; // not found
+}
+
+
   return (
     <div className="min-h-screen bg-gray-50 text-black py-8 px-3 sm:px-6 overflow-x-auto">
-      {Object.keys(familyTrees)
-        .sort((a, b) => {
-          const numA = extractGenNumber(a);
-          const numB = extractGenNumber(b);
+   {Object.keys(familyTrees)
+  .sort((a, b) => {
+  const indexA = findGenIndex(a);
+  const indexB = findGenIndex(b);
 
-          if (numA !== null && numB !== null) {
-            return numA - numB; // numeric order
-          }
-          if (numA !== null) return -1;
-          if (numB !== null) return 1;
-          return a.localeCompare(b);
-        })
-        .map((genKey) => (
-          <section key={genKey} className="mb-10">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 text-center">
-              Generation {genKey}
-            </h2>
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
-              {familyTrees[genKey].map((root) => (
-                <TreeNode key={root.id} person={root} />
-              ))}
-            </div>
-          </section>
+  if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+  if (indexA !== -1) return -1;
+  if (indexB !== -1) return 1;
+
+  return a.localeCompare(b);
+})
+  .map((genKey) => (
+    <section key={genKey} className="mb-10">
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 text-center">
+        {genKey}
+      </h2>
+      <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
+        {familyTrees[genKey].map((root) => (
+          <TreeNode key={root.id} person={root} />
         ))}
+      </div>
+    </section>
+  ))}
+
+
     </div>
   );
 }
