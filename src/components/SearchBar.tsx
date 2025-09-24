@@ -8,9 +8,10 @@ interface Person {
   id: string;
   name: string;
   parentId?: string | null;
-  generation?: number;
+  generation?: number | string; // since you’re saving text too
   gender?: "male" | "female";
-  parentName?: string; // for display
+  parentName?: string;
+  descendant?: string; // 👈 new field
 }
 
 export default function SearchBar({ onSelect }: { onSelect: (person: Person) => void }) {
@@ -70,12 +71,22 @@ export default function SearchBar({ onSelect }: { onSelect: (person: Person) => 
     }
   };
 
-  const formatRelation = (person: Person) => {
-    if (!person.parentName) return ""; // no parent found
+const formatRelation = (person: Person) => {
+  // If descendant field exists, show "Descendant of ..."
+  if (person.descendant) {
+    return `Descendant of ${person.descendant}`;
+  }
+
+  // Otherwise fall back to parent-based relation
+  if (person.parentName) {
     if (person.gender === "male") return `Son of ${person.parentName}`;
     if (person.gender === "female") return `Daughter of ${person.parentName}`;
-    return `Child of ${person.parentName}`; // fallback if gender missing
-  };
+    return `Child of ${person.parentName}`;
+  }
+
+  return ""; // no relation info
+};
+
 
   return (
     <div className="flex flex-col gap-2 items-center mb-6 relative w-full max-w-md">
